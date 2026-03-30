@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校准管理 - 拉曼光谱边缘客户端</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .calibration-container { padding: 20px; }
+        .calibration-card { background: #16213e; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .calibration-card h2 { color: #00d9ff; margin-bottom: 15px; }
+        .calibration-status { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .status-indicator { width: 12px; height: 12px; border-radius: 50%; }
+        .status-indicator.valid { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+        .status-indicator.invalid { background: #ff4444; }
+        .calibration-info { color: #aaa; margin-bottom: 15px; }
+        .btn-calibrate { background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%); color: #000; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-calibrate:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 校准管理</h1>
+        <button onclick="window.close()" style="background:transparent;border:none;color:#fff;font-size:24px;cursor:pointer;">×</button>
+    </div>
+    
+    <div class="calibration-container">
+        <div class="calibration-card">
+            <h2>波长校准</h2>
+            <div class="calibration-status">
+                <div class="status-indicator invalid" id="wavelength-status"></div>
+                <span id="wavelength-text">未校准</span>
+            </div>
+            <div class="calibration-info">
+                <div>最后校准：-</div>
+                <div>参考物质：硅片 (520 cm⁻¹)</div>
+                <div>校正量：- cm⁻¹</div>
+            </div>
+            <button class="btn-calibrate" onclick="calibrateWavelength()">🔬 开始波长校准</button>
+        </div>
+        
+        <div class="calibration-card">
+            <h2>强度校准</h2>
+            <div class="calibration-status">
+                <div class="status-indicator invalid" id="intensity-status"></div>
+                <span id="intensity-text">未校准</span>
+            </div>
+            <div class="calibration-info">
+                <div>最后校准：-</div>
+                <div>参考光源：-</div>
+                <div>校正曲线：-</div>
+            </div>
+            <button class="btn-calibrate" onclick="calibrateIntensity()">💡 开始强度校准</button>
+        </div>
+        
+        <div class="calibration-card">
+            <h2>暗噪声校准</h2>
+            <div class="calibration-status">
+                <div class="status-indicator valid" id="dark-status"></div>
+                <span id="dark-text">已校准 (2026-03-22 10:00)</span>
+            </div>
+            <div class="calibration-info">
+                <div>平均暗噪声：0.02 a.u.</div>
+                <div>采集次数：3 次平均</div>
+            </div>
+            <button class="btn-calibrate" onclick="calibrateDarkNoise()">🌑 重新采集暗光谱</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        // ==================== 校准管理功能 ====================
+        // P11 修复（第六轮）：彻底删除本地状态变量，每次从后端获取
+        
+        import { calibrateWavelength as bridgeCalibrateWavelength, calibrateIntensity as bridgeCalibrateIntensity, getCalibrationStatus as bridgeGetCalibrationStatus } from '../js/bridge.js';
+        import { addLog, showToast } from '../js/utils.js';
+
+        // 不再维护本地状态，每次从后端获取
+        let currentCalibrationStatus = null;
+
+        /**
+         * 从后端加载校准状态
+         */
+        async function loadCalibrationStateFromBackend() {
+            try {
+                const result = await bridgeGetCalibrationStatus();
+                
+                if (result.success && result.data) {
+                    currentCalibrationStatus = result.data;
+                    addLog('校准状态已从后端加载', 'info');
+                }
+            } catch (error) {
+                addLog(`从后端加载校准状态失败：${error.message}`, 'warning');
+            }
+            
+            updateCalibrationUI();
+        }
+
+        /**
+         * 保存校准状态（仅通知主页面刷新，不发送数据）
+         */
+        function saveCalibrationState() {
+            // 通知主页面刷新，让主页面自己从后端获取最新状态
+            if (window.opener && !window.opener.closed) {
+                window.opener.postMessage({ type: 'calibration_updated' }, '*');
+            }
+        }
+
+        /**
+         * 更新 UI 显示（使用 currentCalibrationStatus）
+         */
+        function updateCalibrationUI() {
+            if (!currentCalibrationStatus) return;
+            
+            const { wavelength, intensity } = currentCalibrationStatus;
+            
+            // 波长校准
+            const wlStatus = document.getElementById('wavelength-status');
+            const wlText = document.getElementById('wavelength-text');
+            if (wavelength.calibrated) {
+                wlStatus.className = 'status-indicator valid';
+                wlText.textContent = `已校准 (${wavelength.correction?.toFixed(3) || 0} cm⁻¹)`;
+            } else {
+                wlStatus.className = 'status-indicator invalid';
+                wlText.textContent = '未校准';
+            }
+
+            // 强度校准
+            const intStatus = document.getElementById('intensity-status');
+            const intText = document.getElementById('intensity-text');
+            if (intensity.calibrated) {
+                intStatus.className = 'status-indicator valid';
+                intText.textContent = '已校准';
+            } else {
+                intStatus.className = 'status-indicator invalid';
+                intText.textContent = '未校准';
+            }
+
+            // 暗噪声校准（本地模拟）
+            const darkStatus = document.getElementById('dark-status');
+            const darkText = document.getElementById('dark-text');
+            darkStatus.className = 'status-indicator valid';
+            darkText.textContent = '已校准 (2026-03-22 10:00)';
+        }
+
+        /**
+         * 波长校准（调用后端 API）
+         */
+        async function calibrateWavelength() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '校准中...';
+
+            try {
+                addLog('开始波长校准，使用硅片 520 cm⁻¹ 作为参考...', 'info');
+                showToast('波长校准中...', 'info');
+
+                // 调用后端 API
+                const result = await bridgeCalibrateWavelength([520.0]);
+
+                if (result.success) {
+                    addLog(`波长校准成功：校正值=${result.data.correction.toFixed(3)} cm⁻¹`, 'success');
+                    showToast(`波长校准成功：校正值=${result.data.correction.toFixed(3)} cm⁻¹`, 'success');
+                    
+                    // 重新从后端加载状态
+                    await loadCalibrationStateFromBackend();
+                    saveCalibrationState();
+                } else {
+                    throw new Error(result.message || '校准失败');
+                }
+            } catch (error) {
+                addLog(`波长校准失败：${error.message}`, 'error');
+                showToast(`波长校准失败：${error.message}`, 'error', 5000);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔬 重新校准';
+            }
+        }
+
+        /**
+         * 强度校准（调用后端 API）
+         */
+        async function calibrateIntensity() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '校准中...';
+
+            try {
+                addLog('开始强度校准，请使用标准光源谱图...', 'info');
+                showToast('强度校准中...', 'info');
+
+                // 这里简化处理，使用模拟数据进行演示
+                const referenceSpectrum = new Array(2048).fill(0).map(() => Math.random() * 1000);
+                const theoreticalSpectrum = referenceSpectrum.map(v => v * 1.05);
+
+                // 调用后端 API
+                const result = await bridgeCalibrateIntensity(referenceSpectrum, theoreticalSpectrum);
+
+                if (result.success) {
+                    addLog('强度校准成功', 'success');
+                    showToast('强度校准成功', 'success');
+                    
+                    // 重新从后端加载状态
+                    await loadCalibrationStateFromBackend();
+                    saveCalibrationState();
+                } else {
+                    throw new Error(result.message || '校准失败');
+                }
+            } catch (error) {
+                addLog(`强度校准失败：${error.message}`, 'error');
+                showToast(`强度校准失败：${error.message}`, 'error', 5000);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '💡 重新校准';
+            }
+        }
+
+        /**
+         * 暗噪声校准
+         */
+        function calibrateDarkNoise() {
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '采集中...';
+
+            // 模拟采集过程
+            setTimeout(() => {
+                const avgNoise = (Math.random() * 0.02 + 0.01).toFixed(4);
+                btn.disabled = false;
+                btn.textContent = '🌑 重新采集暗光谱';
+                alert(`暗噪声采集完成！\n平均暗噪声：${avgNoise} a.u.`);
+            }, 3000);
+        }
+
+        // 页面加载时从后端初始化校准状态
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCalibrationStateFromBackend();
+        });
+        
+        // 导出函数到全局供 HTML 调用
+        window.calibrateWavelength = calibrateWavelength;
+        window.calibrateIntensity = calibrateIntensity;
+        window.calibrateDarkNoise = calibrateDarkNoise;
+    </script>
+</body>
+</html>

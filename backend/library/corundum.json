@@ -1,0 +1,90 @@
+{
+  "id": "corundum",
+  "name": "刚玉 (Corundum)",
+  "cas": "1344-28-1",
+  "description": "氧化铝（Al₂O₃）矿物，包括红宝石（含 Cr）和蓝宝石（含 Fe、Ti），用于宝石鉴定和工业应用",
+  "data_source": "文献报道特征峰位置（非 RRUFF 实测数据）",
+  "warning": "演示数据 - 基于文献特征峰，非实测光谱",
+  "reference": "Krantz, R. V., et al. (1988). Applied Spectroscopy, 42(8), 1439-1442.",
+  "category": "氧化物矿物",
+  "varieties": ["红宝石 (Ruby)", "蓝宝石 (Sapphire)"],
+  "peaks": [
+    {
+      "position": 418,
+      "intensity": 1.0,
+      "width": 12,
+      "assignment": "晶格振动",
+      "literature_value": "418 cm⁻¹ (最强峰)"
+    },
+    {
+      "position": 378,
+      "intensity": 0.7,
+      "width": 10,
+      "assignment": "Al-O 弯曲振动",
+      "literature_value": "378 cm⁻¹"
+    },
+    {
+      "position": 432,
+      "intensity": 0.6,
+      "width": 10,
+      "assignment": "Al-O 弯曲振动",
+      "literature_value": "432 cm⁻¹"
+    },
+    {
+      "position": 451,
+      "intensity": 0.5,
+      "width": 10,
+      "assignment": "Al-O 弯曲振动",
+      "literature_value": "451 cm⁻¹"
+    },
+    {
+      "position": 578,
+      "intensity": 0.4,
+      "width": 12,
+      "assignment": "Al-O 伸缩振动",
+      "literature_value": "578 cm⁻¹"
+    },
+    {
+      "position": 645,
+      "intensity": 0.3,
+      "width": 10,
+      "assignment": "Al-O 弯曲振动",
+      "literature_value": "645 cm⁻¹"
+    },
+    {
+      "position": 751,
+      "intensity": 0.35,
+      "width": 10,
+      "assignment": "Al-O 弯曲振动",
+      "literature_value": "751 cm⁻¹"
+    },
+    {
+      "position": 1125,
+      "intensity": 0.1,
+      "width": 15,
+      "assignment": "二阶声子模",
+      "literature_value": "1125 cm⁻¹"
+    }
+  ],
+  "spectrum_range": {
+    "min": 200,
+    "max": 3200,
+    "points": 1024
+  },
+  "measurement_conditions": {
+    "temperature": "室温 (298K)",
+    "excitation": "514.5 nm Ar+ 激光",
+    "note": "此为模拟条件，非实测参数"
+  },
+  "identification_features": [
+    "418 cm⁻¹ 最强峰是刚玉的特征峰",
+    "378、432、451 cm⁻¹ 三重峰",
+    "莫氏硬度 9，仅次于金刚石",
+    "红宝石含 Cr³⁺呈红色，蓝宝石含 Fe²⁺/Ti⁴⁺呈蓝色"
+  ],
+  "similar_minerals": [
+    "尖晶石 (Spinel): 主峰在 665 cm⁻¹",
+    "硅线石 (Sillimanite): 主峰在 320 cm⁻¹",
+    "金红石 (Rutile): 主峰在 447 cm⁻¹"
+  ]
+}

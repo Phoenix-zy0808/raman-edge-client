@@ -1,0 +1,49 @@
+{
+  "id": "diamond",
+  "name": "金刚石 (Diamond)",
+  "cas": "7782-40-3",
+  "description": "天然金刚石标准物质，特征峰 1332 cm⁻¹，用于仪器校准和压力标定",
+  "data_source": "文献报道特征峰位置（非 NIST 实测数据）",
+  "warning": "演示数据 - 基于文献特征峰，非实测光谱",
+  "reference": "Boppart, H., et al. (1985). Raman spectra of diamond at high pressures. Physical Review B, 32(2), 1423.",
+  "peaks": [
+    {
+      "position": 1332,
+      "intensity": 1.0,
+      "width": 6,
+      "assignment": "一阶光学声子模 (F2g)",
+      "literature_value": "1332 cm⁻¹ (室温，常压)"
+    },
+    {
+      "position": 1140,
+      "intensity": 0.02,
+      "width": 30,
+      "assignment": "微晶金刚石峰 (T 相碳)",
+      "literature_value": "1130-1150 cm⁻¹"
+    },
+    {
+      "position": 1150,
+      "intensity": 0.01,
+      "width": 25,
+      "assignment": "非晶碳杂质",
+      "literature_value": "1140-1160 cm⁻¹"
+    },
+    {
+      "position": 2664,
+      "intensity": 0.08,
+      "width": 15,
+      "assignment": "二阶声子模 (2TO)",
+      "literature_value": "2660-2670 cm⁻¹"
+    }
+  ],
+  "spectrum_range": {
+    "min": 200,
+    "max": 3200,
+    "points": 1024
+  },
+  "measurement_conditions": {
+    "temperature": "室温 (298K)",
+    "excitation": "514.5 nm Ar+ 激光",
+    "note": "此为模拟条件，非实测参数"
+  }
+}

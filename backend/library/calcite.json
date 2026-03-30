@@ -1,0 +1,75 @@
+{
+  "id": "calcite",
+  "name": "方解石 (Calcite)",
+  "cas": "471-34-1",
+  "description": "碳酸钙（CaCO₃）矿物，最常见的碳酸盐矿物，用于地质鉴定和工业应用",
+  "data_source": "文献报道特征峰位置（非 RRUFF 实测数据）",
+  "warning": "演示数据 - 基于文献特征峰，非实测光谱",
+  "reference": "Gunasekaran, S., et al. (2006). Spectrochimica Acta Part A, 65, 212-221.",
+  "category": "碳酸盐矿物",
+  "peaks": [
+    {
+      "position": 1086,
+      "intensity": 1.0,
+      "width": 15,
+      "assignment": "CO₃²⁻对称伸缩振动 (ν1)",
+      "literature_value": "1086 cm⁻¹ (最强峰)"
+    },
+    {
+      "position": 713,
+      "intensity": 0.6,
+      "width": 12,
+      "assignment": "CO₃²⁻面内弯曲振动 (ν4)",
+      "literature_value": "713 cm⁻¹"
+    },
+    {
+      "position": 282,
+      "intensity": 0.3,
+      "width": 10,
+      "assignment": "CO₃²⁻面外弯曲振动 (ν2)",
+      "literature_value": "282 cm⁻¹"
+    },
+    {
+      "position": 1435,
+      "intensity": 0.4,
+      "width": 20,
+      "assignment": "CO₃²⁻非对称伸缩振动 (ν3)",
+      "literature_value": "1435 cm⁻¹"
+    },
+    {
+      "position": 1748,
+      "intensity": 0.1,
+      "width": 15,
+      "assignment": "ν1 + ν4 组合频",
+      "literature_value": "1748 cm⁻¹"
+    },
+    {
+      "position": 2510,
+      "intensity": 0.08,
+      "width": 15,
+      "assignment": "2ν1 倍频",
+      "literature_value": "2510 cm⁻¹"
+    }
+  ],
+  "spectrum_range": {
+    "min": 200,
+    "max": 3200,
+    "points": 1024
+  },
+  "measurement_conditions": {
+    "temperature": "室温 (298K)",
+    "excitation": "514.5 nm Ar+ 激光",
+    "note": "此为模拟条件，非实测参数"
+  },
+  "identification_features": [
+    "1086 cm⁻¹ 最强峰是方解石的特征峰",
+    "713 cm⁻¹ 和 282 cm⁻¹ 是碳酸根的特征振动",
+    "遇稀盐酸起泡",
+    "菱面体解理完全"
+  ],
+  "similar_minerals": [
+    "文石 (Aragonite): 主峰在 1085 cm⁻¹，但 700 cm⁻¹ 有特征峰",
+    "白云石 (Dolomite): 主峰在 1098 cm⁻¹",
+    "菱镁矿 (Magnesite): 主峰在 1095 cm⁻¹"
+  ]
+}

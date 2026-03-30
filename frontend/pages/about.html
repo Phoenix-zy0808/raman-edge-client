@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于 - 拉曼光谱边缘客户端</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .about-container { padding: 20px; text-align: center; }
+        .logo { font-size: 64px; margin-bottom: 20px; }
+        .app-name { color: #00d9ff; font-size: 24px; margin-bottom: 10px; }
+        .version { color: #888; margin-bottom: 30px; }
+        .info-card { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: left; }
+        .info-card h3 { color: #00d9ff; margin-bottom: 15px; }
+        .info-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; }
+        .info-item:last-child { border-bottom: none; }
+        .disclaimer { background: rgba(255, 68, 68, 0.1); border: 2px solid #ff4444; border-radius: 8px; padding: 15px; margin: 20px 0; color: #ff6666; text-align: left; }
+        .links { margin-top: 30px; }
+        .links a { color: #00d9ff; margin: 0 10px; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ℹ️ 关于</h1>
+        <button onclick="window.close()" style="background:transparent;border:none;color:#fff;font-size:24px;cursor:pointer;">×</button>
+    </div>
+    
+    <div class="about-container">
+        <div class="logo">🔬</div>
+        <div class="app-name">拉曼光谱边缘客户端</div>
+        <div class="version">版本：P11 修复版 | 构建：2026-03-22</div>
+        
+        <div class="info-card">
+            <h3>软件信息</h3>
+            <div class="info-item">
+                <span>版本</span>
+                <span>P11 修复版</span>
+            </div>
+            <div class="info-item">
+                <span>构建日期</span>
+                <span>2026-03-22</span>
+            </div>
+            <div class="info-item">
+                <span>Python</span>
+                <span>3.9+</span>
+            </div>
+            <div class="info-item">
+                <span>PySide6</span>
+                <span>6.6.0</span>
+            </div>
+        </div>
+        
+        <div class="info-card">
+            <h3>技术栈</h3>
+            <div class="info-item">
+                <span>前端</span>
+                <span>ECharts + Vanilla JS</span>
+            </div>
+            <div class="info-item">
+                <span>后端</span>
+                <span>Python + PySide6</span>
+            </div>
+            <div class="info-item">
+                <span>通信</span>
+                <span>QWebChannel</span>
+            </div>
+        </div>
+        
+        <div class="disclaimer">
+            <strong>⚠️ 免责声明</strong><br>
+            本软件仅用于教学演示和科研学习，不可用于实际物质分析或医疗诊断。<br>
+            谱库数据为模拟数据，非 NIST 标准谱库。<br>
+            使用本软件进行实际检测可能导致物质误判。
+        </div>
+        
+        <div class="links">
+            <a href="#" onclick="alert('查看源代码功能待实现')">📦 查看源代码</a>
+            <a href="#" onclick="alert('检查更新功能待实现')">🔄 检查更新</a>
+            <a href="#" onclick="alert('帮助文档功能待实现')">📖 帮助文档</a>
+        </div>
+        
+        <div style="margin-top: 30px; color: #666; font-size: 0.85em;">
+            © 2026 拉曼光谱边缘客户端 | 教学演示用途
+        </div>
+    </div>
+</body>
+</html>

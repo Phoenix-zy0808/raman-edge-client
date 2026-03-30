@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置 - 拉曼光谱边缘客户端</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .settings-container { padding: 20px; }
+        .settings-section { margin-bottom: 30px; }
+        .settings-section h2 { color: #00d9ff; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+        .setting-item label { color: #eee; }
+        .setting-item input[type="checkbox"] { width: 20px; height: 20px; }
+        .setting-item input[type="number"], .setting-item select { background: #1a1a2e; color: #eee; border: 1px solid #333; padding: 8px; border-radius: 4px; }
+        .btn-save { background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%); color: #000; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; }
+        .btn-reset { background: linear-gradient(135deg, #666 0%, #444 100%); color: #fff; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; margin-top: 20px; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>设置</h1>
+    </header>
+
+    <!-- 导航栏 -->
+    <nav class="main-nav" role="navigation" aria-label="主导航">
+        <a href="../index.html" class="nav-link">首页</a>
+        <a href="live.html" class="nav-link">实时采集</a>
+        <a href="peaks.html" class="nav-link">峰值检测</a>
+        <a href="library.html" class="nav-link">谱库匹配</a>
+        <a href="processing.html" class="nav-link">数据处理</a>
+        <a href="difference.html" class="nav-link">差异对比</a>
+        <a href="settings.html" class="nav-link active">设置</a>
+    </nav>
+    <div class="header">
+        <h1>设置</h1>
+        <button onclick="window.close()" style="background:transparent;border:none;color:#fff;font-size:24px;cursor:pointer;">×</button>
+    </div>
+    
+    <div class="settings-container">
+        <div class="settings-section">
+            <h2>采集设置</h2>
+            <div class="setting-item">
+                <label>默认积分时间 (ms)</label>
+                <input type="number" id="default-integration-time" value="100" min="10" max="10000">
+            </div>
+            <div class="setting-item">
+                <label>默认累加次数</label>
+                <input type="number" id="default-accumulation" value="1" min="1" max="100">
+            </div>
+            <div class="setting-item">
+                <label>自动曝光目标强度</label>
+                <input type="number" id="auto-exposure-target" value="0.7" min="0.5" max="0.8" step="0.05">
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h2>数据处理</h2>
+            <div class="setting-item">
+                <label>暗噪声扣除</label>
+                <input type="checkbox" id="dark-noise-correction" checked>
+            </div>
+            <div class="setting-item">
+                <label>非线性校正</label>
+                <input type="checkbox" id="nonlinear-correction">
+            </div>
+            <div class="setting-item">
+                <label>平滑方法</label>
+                <select id="smooth-method">
+                    <option value="sg">Savitzky-Golay</option>
+                    <option value="ma">移动平均</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h2>显示设置</h2>
+            <div class="setting-item">
+                <label>主题</label>
+                <select id="theme">
+                    <option value="dark">暗色</option>
+                    <option value="light">亮色</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>显示峰值标注</label>
+                <input type="checkbox" id="show-peak-labels" checked>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h2>数据管理</h2>
+            <div class="setting-item">
+                <label>默认导出格式</label>
+                <select id="export-format">
+                    <option value="json">JSON</option>
+                    <option value="csv">CSV</option>
+                    <option value="spc">SPC</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label>自动保存数据</label>
+                <input type="checkbox" id="auto-save">
+            </div>
+        </div>
+        
+        <div>
+            <button class="btn-save" onclick="saveSettings()">💾 保存设置</button>
+            <button class="btn-reset" onclick="resetSettings()">🔄 恢复默认</button>
+        </div>
+    </div>
+    
+    <script>
+        // ==================== 设置持久化（localStorage） ====================
+        
+        const SETTINGS_KEY = 'raman_client_settings';
+        
+        // 默认设置
+        const DEFAULT_SETTINGS = {
+            integrationTime: 100,
+            accumulationCount: 1,
+            autoExposureTarget: 0.7,
+            darkNoiseCorrection: true,
+            nonlinearCorrection: false,
+            smoothMethod: 'sg',
+            theme: 'dark',
+            showPeakLabels: true,
+            exportFormat: 'json',
+            autoSave: false
+        };
+        
+        /**
+         * 从 localStorage 加载设置
+         */
+        function loadSettings() {
+            try {
+                const saved = localStorage.getItem(SETTINGS_KEY);
+                if (saved) {
+                    return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+                }
+            } catch (e) {
+                console.error('加载设置失败:', e);
+            }
+            return DEFAULT_SETTINGS;
+        }
+        
+        /**
+         * 保存设置到 localStorage
+         */
+        function saveSettingsToStorage(settings) {
+            try {
+                localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+                return true;
+            } catch (e) {
+                console.error('保存设置失败:', e);
+                return false;
+            }
+        }
+        
+        /**
+         * 恢复默认设置
+         */
+        function resetSettingsToDefault() {
+            try {
+                localStorage.removeItem(SETTINGS_KEY);
+                return DEFAULT_SETTINGS;
+            } catch (e) {
+                console.error('重置设置失败:', e);
+                return DEFAULT_SETTINGS;
+            }
+        }
+        
+        /**
+         * 将设置值填充到表单
+         */
+        function populateForm(settings) {
+            document.getElementById('default-integration-time').value = settings.integrationTime;
+            document.getElementById('default-accumulation').value = settings.accumulationCount;
+            document.getElementById('auto-exposure-target').value = settings.autoExposureTarget;
+            document.getElementById('dark-noise-correction').checked = settings.darkNoiseCorrection;
+            document.getElementById('nonlinear-correction').checked = settings.nonlinearCorrection;
+            document.getElementById('smooth-method').value = settings.smoothMethod;
+            document.getElementById('theme').value = settings.theme;
+            document.getElementById('show-peak-labels').checked = settings.showPeakLabels;
+            document.getElementById('export-format').value = settings.exportFormat;
+            document.getElementById('auto-save').checked = settings.autoSave;
+        }
+        
+        /**
+         * 从表单收集设置值
+         */
+        function collectFormSettings() {
+            return {
+                integrationTime: parseInt(document.getElementById('default-integration-time').value),
+                accumulationCount: parseInt(document.getElementById('default-accumulation').value),
+                autoExposureTarget: parseFloat(document.getElementById('auto-exposure-target').value),
+                darkNoiseCorrection: document.getElementById('dark-noise-correction').checked,
+                nonlinearCorrection: document.getElementById('nonlinear-correction').checked,
+                smoothMethod: document.getElementById('smooth-method').value,
+                theme: document.getElementById('theme').value,
+                showPeakLabels: document.getElementById('show-peak-labels').checked,
+                exportFormat: document.getElementById('export-format').value,
+                autoSave: document.getElementById('auto-save').checked
+            };
+        }
+        
+        /**
+         * 保存设置按钮处理
+         */
+        function saveSettings() {
+            const settings = collectFormSettings();
+            const success = saveSettingsToStorage(settings);
+            
+            if (success) {
+                // 通知主页面设置已更新
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({ type: 'settings_updated', settings }, '*');
+                }
+                alert('设置已保存，重启应用后生效');
+            } else {
+                alert('保存失败，请检查浏览器权限');
+            }
+        }
+        
+        /**
+         * 恢复默认设置按钮处理
+         */
+        function resetSettings() {
+            if (confirm('确定要恢复默认设置吗？')) {
+                resetSettingsToDefault();
+                populateForm(DEFAULT_SETTINGS);
+                
+                // 通知主页面
+                if (window.opener && !window.opener.closed) {
+                    window.opener.postMessage({ type: 'settings_reset' }, '*');
+                }
+                alert('已恢复默认设置');
+            }
+        }
+        
+        // 页面加载时初始化表单
+        window.addEventListener('DOMContentLoaded', () => {
+            const settings = loadSettings();
+            populateForm(settings);
+        });
+    </script>
+</body>
+</html>

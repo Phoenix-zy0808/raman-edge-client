@@ -1,0 +1,64 @@
+{
+  "id": "zno",
+  "name": "氧化锌 (ZnO)",
+  "cas": "1314-13-2",
+  "description": "氧化锌半导体材料，纤锌矿结构",
+  "data_source": "文献报道特征峰位置（非 NIST 实测数据）",
+  "warning": "演示数据 - 基于文献特征峰，非实测光谱",
+  "reference": "Bundalos, S., et al. (1998). Raman scattering in ZnO. Journal of Applied Physics, 84(2), 859-863.",
+  "peaks": [
+    {
+      "position": 437,
+      "intensity": 1.0,
+      "width": 15,
+      "assignment": "E2 (high) 模 - 氧原子振动",
+      "literature_value": "437-439 cm⁻¹"
+    },
+    {
+      "position": 574,
+      "intensity": 0.3,
+      "width": 20,
+      "assignment": "A1(LO) 模 - 纵向光学声子",
+      "literature_value": "570-580 cm⁻¹"
+    },
+    {
+      "position": 380,
+      "intensity": 0.2,
+      "width": 15,
+      "assignment": "A1(TO) 模 - 横向光学声子",
+      "literature_value": "378-382 cm⁻¹"
+    },
+    {
+      "position": 330,
+      "intensity": 0.15,
+      "width": 12,
+      "assignment": "E2(low) 模 - 锌原子振动",
+      "literature_value": "328-332 cm⁻¹"
+    },
+    {
+      "position": 538,
+      "intensity": 0.1,
+      "width": 25,
+      "assignment": "缺陷/杂质诱导模",
+      "literature_value": "530-550 cm⁻¹"
+    },
+    {
+      "position": 1150,
+      "intensity": 0.05,
+      "width": 30,
+      "assignment": "二阶声子模 (2A1)",
+      "literature_value": "1140-1160 cm⁻¹"
+    }
+  ],
+  "spectrum_range": {
+    "min": 200,
+    "max": 3200,
+    "points": 1024
+  },
+  "measurement_conditions": {
+    "temperature": "室温 (298K)",
+    "excitation": "514.5 nm Ar+ 激光",
+    "crystal_structure": "纤锌矿 (Wurtzite)",
+    "note": "此为模拟条件，非实测参数"
+  }
+}

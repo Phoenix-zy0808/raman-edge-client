@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python *)",
+      "Bash(node *)",
+      "Bash(del *)",
+      "Bash(npm test)",
+      "Bash(timeout *)",
+      "Bash(tasklist *)",
+      "Bash(findstr *)",
+      "Bash(taskkill *)",
+      "Bash(dir *)",
+      "Bash(rcc *)",
+      "Bash(mkdir *)",
+      "Bash(wc *)",
+      "Bash(select-object *)",
+      "Bash(move *)",
+      "Bash(.venv\\scripts\\activate)",
+      "WebSearch",
+      "WebFetch(rruff.info)",
+      "WebFetch(www.kaggle.com)",
+      "Bash(pip install *)",
+      "Bash(start *)",
+      "Bash(type *)",
+      "Bash(sed *)",
+      "Bash(echo *)",
+      "Bash(git remote *)",
+      "Bash(git init)",
+      "Bash(git config *)",
+      "Bash(git add *)"
+    ]
+  },
+  "$version": 3
+}

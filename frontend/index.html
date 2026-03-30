@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="拉曼光谱边缘客户端 - 用于拉曼光谱数据采集、处理和分析的边缘计算工具">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>拉曼光谱边缘客户端</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body role="application" aria-label="拉曼光谱边缘客户端">
+    <!-- 跳过导航链接（无障碍访问） -->
+    <a href="#main-content" class="skip-link" aria-label="跳到主要内容">跳到主要内容</a>
+    
+    <!-- 加载动画 -->
+    <div id="loading-overlay" role="status" aria-live="polite" aria-label="系统加载中">
+        <div class="loading-spinner"></div>
+        <p>正在初始化...</p>
+    </div>
+
+    <header class="header" role="banner">
+        <h1>拉曼光谱边缘客户端</h1>
+    </header>
+
+    <!-- 导航栏 -->
+    <nav class="main-nav" role="navigation" aria-label="主导航">
+        <a href="index.html" class="nav-link active">首页</a>
+        <a href="pages/live.html" class="nav-link">实时采集</a>
+        <a href="pages/peaks.html" class="nav-link">峰值检测</a>
+        <a href="pages/library.html" class="nav-link">谱库匹配</a>
+        <a href="pages/processing.html" class="nav-link">数据处理</a>
+        <a href="pages/difference.html" class="nav-link">差异对比</a>
+        <a href="pages/settings.html" class="nav-link">设置</a>
+    </nav>
+
+    <div class="status-bar" role="status" aria-label="系统状态栏" aria-live="polite">
+        <div class="status-item">
+            <div class="status-indicator disconnected" id="device-status" title="设备未连接" aria-hidden="true"></div>
+            <span>设备：<span id="device-status-text">未连接</span></span>
+        </div>
+        <div class="status-item">
+            <div class="status-indicator disconnected" id="acquisition-status" title="采集未开始" aria-hidden="true"></div>
+            <span>采集：<span id="acquisition-status-text">停止</span></span>
+        </div>
+        <!-- P11 新增：校准状态 -->
+        <div class="status-item">
+            <div class="status-indicator disconnected" id="wavelength-calibration-status" title="波长未校准" aria-hidden="true"></div>
+            <span>波长校准：<span id="wavelength-calibration-text">未校准</span></span>
+        </div>
+        <div class="status-item">
+            <div class="status-indicator disconnected" id="intensity-calibration-status" title="强度未校准" aria-hidden="true"></div>
+            <span>强度校准：<span id="intensity-calibration-text">未校准</span></span>
+        </div>
+        <div class="status-item">
+            <span id="fps-counter" aria-label="帧率计数器">FPS: 0</span>
+        </div>
+    </div>
+
+    <main id="main-content" class="main-content" role="main" aria-label="主要内容区域">
+        <div class="chart-container" role="figure" aria-label="光谱图表">
+            <div id="spectrum-chart" aria-label="拉曼光谱图" role="img"></div>
+        </div>
+
+        <aside class="control-panel" role="complementary" aria-label="采集控制面板">
+            <h3>采集控制</h3>
+
+            <button class="btn btn-primary" id="btn-connect" aria-label="连接或断开设备">
+                连接
+            </button>
+
+            <button class="btn btn-primary" id="btn-load-demo" aria-label="加载演示数据">
+                演示数据
+            </button>
+
+            <button class="btn btn-primary" id="btn-start" disabled aria-label="开始或停止采集">
+                开始
+            </button>
+
+            <button class="btn btn-danger" id="btn-export" disabled aria-label="导出数据到文件">
+                导出
+            </button>
+
+            <button class="btn btn-danger" id="btn-export-batch" disabled aria-label="批量导出所有数据">
+                批量导出
+            </button>
+
+            <button class="btn btn-primary" id="btn-peak-label" aria-label="切换峰值标注" aria-pressed="true">
+                标注
+            </button>
+
+            <button class="btn btn-primary" id="btn-theme" aria-label="切换主题">
+                主题：暗色
+            </button>
+
+            <button class="btn btn-primary" id="btn-baseline" aria-label="应用基线校正">
+                基线校正
+            </button>
+
+            <button class="btn btn-primary" id="btn-peak-area" aria-label="计算峰面积">
+                峰面积
+            </button>
+
+            <button class="btn btn-primary" id="btn-library-match" aria-label="进行谱库匹配">
+                谱库匹配
+            </button>
+
+            <button class="btn btn-primary" id="btn-import" aria-label="导入历史数据文件">
+                导入数据
+            </button>
+
+            <!-- P2 修复：多光谱对比按钮 -->
+            <button class="btn btn-primary" id="btn-history-add" aria-label="添加当前光谱到对比列表">
+                ➕ 添加对比
+            </button>
+
+            <button class="btn btn-primary" id="btn-history-clear" aria-label="清除所有对比光谱">
+                🗑️ 清除对比
+            </button>
+
+            <button class="btn btn-primary" id="btn-multi-spectrum" aria-label="切换多谱对比模式" aria-pressed="false">
+                多谱对比：关
+            </button>
+
+            <!-- AI 分析 -->
+            <div style="border-top:1px solid var(--border);margin:15px 0;"></div>
+            <h3 style="margin-bottom:10px;">AI 智能分析</h3>
+
+            <button class="btn btn-primary" id="btn-ai-predict" aria-label="AI 预测">
+                AI 物质识别
+            </button>
+
+            <button class="btn btn-primary" id="btn-ai-uncertainty" aria-label="AI 预测（带不确定性）">
+                AI + 不确定性
+            </button>
+
+            <button class="btn btn-primary" id="btn-ai-explain" aria-label="AI 可解释性分析">
+                AI 决策解释
+            </button>
+
+            <button class="btn btn-primary" id="btn-ai-full" aria-label="AI 完整分析">
+                AI 完整分析
+            </button>
+
+            <button class="btn btn-primary" id="btn-ai-outlier" aria-label="AI 异常检测">
+                AI 异常检测
+            </button>
+
+            <!-- P11 新增：自动曝光开关 -->
+            <div class="control-group" style="display:flex;align-items:center;gap:10px;">
+                <label for="auto-exposure-toggle">自动曝光:</label>
+                <label class="switch">
+                    <input type="checkbox" id="auto-exposure-toggle" role="switch" aria-label="启用自动曝光">
+                    <span class="slider"></span>
+                </label>
+                <span id="auto-exposure-status" style="font-size:12px;color:#888;" aria-live="polite">关</span>
+            </div>
+
+            <div class="control-group" id="auto-exposure-target-group" style="display:none;">
+                <label for="auto-exposure-target">目标强度：<span id="auto-exposure-target-value">0.70</span></label>
+                <input type="range" id="auto-exposure-target" min="0.5" max="0.8" step="0.05"
+                       value="0.7" aria-label="设置自动曝光目标强度">
+                <button class="btn btn-primary" id="btn-auto-exposure-run" style="margin-top:10px;width:100%;" aria-label="执行自动曝光">
+                    ▶️ 执行自动曝光
+                </button>
+            </div>
+
+            <!-- P11 新增：校准按钮 -->
+            <button class="btn btn-primary" id="btn-wavelength-calibrate" aria-label="进行波长校准">
+                🔬 波长校准
+            </button>
+
+            <button class="btn btn-primary" id="btn-intensity-calibrate" aria-label="进行强度校准">
+                💡 强度校准
+            </button>
+
+            <div class="control-group">
+                <label for="integration-time">积分时间 (ms): <span id="integration-time-value">100</span></label>
+                <input type="number" id="integration-time" min="10" max="10000" step="10"
+                       value="100"
+                       style="background:#1a1a2e;color:#eee;border:1px solid #333;padding:4px;border-radius:4px;width:80px;"
+                       aria-label="设置积分时间（毫秒）">
+            </div>
+
+            <div class="control-group">
+                <label for="accumulation-count">累加平均次数：<span id="accumulation-count-value">1</span></label>
+                <input type="number" id="accumulation-count" min="1" max="100" step="1"
+                       value="1"
+                       style="background:#1a1a2e;color:#eee;border:1px solid #333;padding:4px;border-radius:4px;width:60px;"
+                       aria-label="设置累加平均次数">
+            </div>
+
+            <div class="control-group">
+                <label for="smoothing-window">平滑窗口 (点): <span id="smoothing-window-value">0</span></label>
+                <input type="number" id="smoothing-window" min="0" max="51" step="2"
+                       value="0"
+                       style="background:#1a1a2e;color:#eee;border:1px solid #333;padding:4px;border-radius:4px;width:60px;"
+                       aria-label="设置平滑窗口大小">
+            </div>
+
+            <div class="control-group">
+                <label for="noise-slider">噪声水平：<span id="noise-value">0.02</span></label>
+                <input type="range" id="noise-slider" min="0" max="0.1" step="0.01"
+                       value="0.02" aria-label="设置噪声水平">
+            </div>
+
+            <div class="control-group">
+                <label for="device-state">设备状态模拟</label>
+                <select id="device-state"
+                        style="background:#1a1a2e;color:#eee;border:1px solid #333;padding:8px;border-radius:4px;"
+                        aria-label="选择设备状态模拟模式">
+                    <option value="normal">正常</option>
+                    <option value="high_noise">高噪声</option>
+                    <option value="error">异常</option>
+                </select>
+            </div>
+        </aside>
+    </main>
+
+    <!-- 日志面板 -->
+    <section class="log-panel" id="log-panel" role="log" aria-label="系统日志" aria-live="polite">
+        <div class="log-entry info">系统初始化完成...</div>
+    </section>
+
+    <!-- 谱库匹配结果面板 -->
+    <div class="library-panel" id="library-panel" style="display: none;" role="dialog" aria-label="谱库匹配结果" aria-modal="true">
+        <div class="library-header">
+            <h3>谱库匹配结果</h3>
+            <button class="btn-close" id="btn-library-close" data-action="close-library" aria-label="关闭谱库匹配结果">×</button>
+        </div>
+        <!-- P11 修复：醒目的演示数据警告（可折叠） -->
+        <div class="library-disclaimer library-disclaimer-critical collapsible" id="library-disclaimer">
+            <button class="disclaimer-toggle" onclick="toggleDisclaimer()" aria-expanded="false" aria-controls="library-disclaimer-content">
+                <div class="library-disclaimer-content collapsed" id="library-disclaimer-content">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                        <span style="font-size:20px;" aria-hidden="true">⚠️</span>
+                        <strong style="color:#fff;text-decoration:underline;">数据源警告</strong>
+                    </div>
+                    <div style="line-height:1.6;">
+                        <div>🔴 <strong>本谱库包含的数据为演示数据，非 NIST 标准谱库</strong></div>
+                        <div style="margin-top:6px;font-size:13px;color:#ffcccc;">
+                            • 谱图数据基于文献报道的特征峰位置生成，非实测光谱<br>
+                            • 仅用于软件功能演示和教学目的<br>
+                            • <strong>不可用于实际物质分析或科研报告</strong><br>
+                            • 如需使用真实谱库，请导入 NIST 或 RRUFF 标准谱图数据
+                        </div>
+                    </div>
+                </div>
+                <div style="font-size:12px;color:#ffaa00;margin-top:8px;text-align:center;">
+                    <span id="disclaimer-toggle-text">点击展开详情</span>
+                </div>
+            </button>
+        </div>
+        <div class="library-results" id="library-results" role="list" aria-label="匹配结果列表">
+            <!-- 匹配结果将动态插入 -->
+        </div>
+    </div>
+
+    <!-- 峰面积结果显示 -->
+    <div class="peak-area-panel" id="peak-area-panel" style="display: none;" role="dialog" aria-label="峰面积计算结果" aria-modal="true">
+        <div class="peak-area-header">
+            <h3>峰面积计算结果</h3>
+            <button class="btn-close" id="btn-peak-area-close" data-action="close-peak-area" aria-label="关闭峰面积结果">×</button>
+        </div>
+        <div class="peak-area-results" id="peak-area-results" role="status" aria-live="polite">
+            <!-- 计算结果将动态插入 -->
+        </div>
+    </div>
+
+    <!-- P12 新增：AI 分析结果面板 -->
+    <div class="ai-panel" id="ai-panel" style="display: none;" role="dialog" aria-label="AI 分析结果" aria-modal="true">
+        <div class="ai-header">
+            <h3>AI 智能分析结果</h3>
+            <button class="btn-close" id="btn-ai-close" data-action="close-ai" aria-label="关闭 AI 分析结果">×</button>
+        </div>
+
+        <!-- P12 新增：模型选择器 -->
+        <div class="model-selector" style="margin:15px 0;padding:15px;background:var(--bg-secondary);border-radius:3px;border:1px solid var(--border);">
+            <label for="ai-model-select" style="color:var(--text-primary);font-size:13px;">选择模型：</label>
+            <select id="ai-model-select" style="background:var(--bg-tertiary);color:var(--text-primary);border:1px solid var(--border);padding:6px;border-radius:2px;margin-left:10px;min-width:180px;font-size:12px;">
+                <option value="random_forest">随机森林（快速，85%）</option>
+                <option value="transformer">Transformer（高精度，92%）</option>
+            </select>
+            <div id="model-info" style="margin-top:8px;font-size:11px;color:var(--text-secondary);display:flex;gap:15px;">
+                <span>当前模型：<strong id="model-name">随机森林</strong></span>
+                <span>准确率：<strong id="model-accuracy">--</strong></span>
+                <span>推理时间：<strong id="model-inference-time">--ms</strong></span>
+            </div>
+        </div>
+
+        <!-- 预测结果 -->
+        <div class="ai-section">
+            <h4>预测结果</h4>
+            <div class="ai-prediction-result" id="ai-prediction-result">
+                <!-- 预测结果将动态插入 -->
+            </div>
+        </div>
+
+        <!-- 不确定性量化 -->
+        <div class="ai-section" id="ai-uncertainty-section" style="display: none;">
+            <h4>不确定性量化</h4>
+            <div class="ai-uncertainty-result" id="ai-uncertainty-result">
+                <div class="uncertainty-row">
+                    <span>置信度：</span>
+                    <progress id="ai-confidence-bar" value="0" max="1" style="width: 150px;"></progress>
+                    <span id="ai-confidence-value">0%</span>
+                </div>
+                <div class="uncertainty-row">
+                    <span>不确定性：</span>
+                    <span id="ai-uncertainty-value">±0%</span>
+                </div>
+                <div class="uncertainty-row">
+                    <span>95% 置信区间：</span>
+                    <span id="ai-confidence-interval">[0, 0]</span>
+                </div>
+                <div class="uncertainty-row">
+                    <span>风险等级：</span>
+                    <span id="ai-risk-level" class="risk-badge">未知</span>
+                </div>
+                <div class="uncertainty-row">
+                    <span>预测熵：</span>
+                    <span id="ai-entropy">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 可解释性分析 -->
+        <div class="ai-section" id="ai-explain-section" style="display: none;">
+            <h4>决策解释</h4>
+            <div class="ai-explain-result" id="ai-explain-result">
+                <div class="decision-basis" id="ai-decision-basis">
+                    <!-- 决策依据将动态插入 -->
+                </div>
+                <div class="feature-contributions" id="ai-feature-contributions">
+                    <!-- 特征贡献度将动态插入 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 特征重要性热力图 -->
+        <div class="ai-section" id="ai-heatmap-section" style="display: none;">
+            <h4>🎨 特征重要性热力图</h4>
+            <div class="ai-heatmap-container" id="ai-heatmap-container">
+                <!-- 热力图将动态插入 -->
+            </div>
+        </div>
+        
+        <!-- 免责声明 -->
+        <div class="ai-disclaimer">
+            ⚠️ <strong>注意：</strong>本 AI 模型使用演示数据训练，仅用于教学演示和算法验证，不可用于实际物质分析或科研报告。
+        </div>
+    </div>
+
+    <!-- P11 新增：主题选择器面板（默认隐藏，按 T 键切换显示） -->
+    <div class="theme-panel" id="theme-panel" style="display: none;" role="dialog" aria-label="主题选择" aria-modal="true">
+        <div class="theme-panel-header">
+            <h3>🎨 主题选择</h3>
+            <button class="btn-close" id="btn-theme-panel-close" aria-label="关闭主题选择">×</button>
+        </div>
+        <div id="theme-selector-container" aria-label="预设主题列表"></div>
+        <button class="theme-reset-btn" id="btn-theme-reset" aria-label="重置主题为默认">重置为主题</button>
+    </div>
+
+    <!-- P11 修复：使用模块化 JS -->
+    <script src="echarts.min.js"></script>
+    <script src="qwebchannel.js"></script>
+    <script type="module" src="js/main.js"></script>
+
+    <!-- 调试功能：检查 ECharts 加载状态 -->
+    <script>
+    window.addEventListener('load', () => {
+        console.log('[Debug] 页面加载完成');
+        console.log('[Debug] 演示数据按钮:', document.getElementById('btn-load-demo'));
+        console.log('[Debug] 图表容器:', document.getElementById('spectrum-chart'));
+        console.log('[Debug] ECharts:', typeof echarts);
+
+        // 检查 ECharts 是否加载成功
+        if (typeof echarts === 'undefined') {
+            console.error('[Error] ECharts 未加载！检查 echarts.min.js 路径');
+            document.body.innerHTML += `
+                <div style="position:fixed;top:0;left:0;right:0;background:red;color:white;padding:20px;z-index:9999;">
+                    ❌ ECharts 加载失败！请检查 echarts.min.js 是否存在
+                </div>
+            `;
+        } else {
+            console.log('[Debug] ECharts 加载成功');
+        }
+    });
+    </script>
+
+    <!-- E2E 测试兼容：如果模块加载失败，隐藏 loading-overlay -->
+    <script>
+        // 1 秒后如果 loading-overlay 还在，强制隐藏它（用于测试环境，缩短等待时间）
+        setTimeout(function() {
+            var overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(function() {
+                    overlay.style.display = 'none';
+                }, 300);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

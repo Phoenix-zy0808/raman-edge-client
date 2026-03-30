@@ -1,0 +1,32 @@
+{
+  "name": "edge-client-frontend",
+  "version": "1.0.0",
+  "description": "Raman Spectroscopy Edge Client - Frontend",
+  "type": "module",
+  "scripts": {
+    "dev": "node ../scripts/start_frontend.js",
+    "dev:port": "node ../scripts/start_frontend.js --port",
+    "dev:prod": "node ../scripts/start_frontend.js --prod",
+    "serve": "node ../scripts/start_frontend.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0",
+    "@vitest/ui": "^1.6.0",
+    "jsdom": "^24.0.0",
+    "@testing-library/dom": "^10.0.0"
+  },
+  "optionalDependencies": {
+    "chokidar": "^3.6.0"
+  },
+  "keywords": [
+    "raman",
+    "spectroscopy",
+    "frontend"
+  ],
+  "author": "",
+  "license": "MIT"
+}

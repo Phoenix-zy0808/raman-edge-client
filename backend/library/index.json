@@ -1,0 +1,60 @@
+{
+  "version": "2.0.0",
+  "description": "拉曼光谱标准谱库（演示数据 - 基于文献特征峰）",
+  "disclaimer": "⚠️ 重要声明：本谱库数据基于文献报道的特征峰位置生成，非 NIST/RRUFF 实测光谱。仅用于软件功能演示和教学目的，不可用于实际物质分析或科研报告。",
+  "data_source": "文献报道特征峰位置（非实测数据）",
+  "warning_level": "critical",
+  "count": 10,
+  "substances": [
+    {
+      "id": "silicon",
+      "name": "硅 (Silicon)",
+      "cas": "7440-21-3"
+    },
+    {
+      "id": "diamond",
+      "name": "金刚石 (Diamond)",
+      "cas": "7782-40-3"
+    },
+    {
+      "id": "graphite",
+      "name": "石墨 (Graphite)",
+      "cas": "7782-42-5"
+    },
+    {
+      "id": "graphene",
+      "name": "石墨烯 (Graphene)",
+      "cas": "7782-42-5"
+    },
+    {
+      "id": "carbon_nanotube",
+      "name": "碳纳米管 (CNT)",
+      "cas": "308068-56-6"
+    },
+    {
+      "id": "benzene",
+      "name": "苯 (Benzene)",
+      "cas": "71-43-2"
+    },
+    {
+      "id": "zno",
+      "name": "氧化锌 (ZnO)",
+      "cas": "1314-13-2"
+    },
+    {
+      "id": "tio2",
+      "name": "二氧化钛 (TiO2, 锐钛矿)",
+      "cas": "13463-67-7"
+    },
+    {
+      "id": "al2o3",
+      "name": "氧化铝 (Al₂O₃, 蓝宝石)",
+      "cas": "1344-28-1"
+    },
+    {
+      "id": "caco3",
+      "name": "碳酸钙 (CaCO₃, 方解石)",
+      "cas": "471-34-1"
+    }
+  ]
+}

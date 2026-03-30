@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>峰值分析 - 拉曼光谱边缘客户端</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .peaks-container { padding: 20px; display: flex; gap: 20px; }
+        .chart-section { flex: 1; }
+        .peak-list-section {
+            width: 320px;
+            background: #16213e;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #333;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .peak-toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .btn-auto-find {
+            background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-auto-find:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .peak-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .peak-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 4px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .peak-item:hover {
+            background: rgba(0, 217, 255, 0.2);
+        }
+        .peak-item.selected {
+            background: rgba(0, 217, 255, 0.3);
+            border: 1px solid #00d9ff;
+        }
+        .peak-position {
+            color: #00d9ff;
+            font-weight: bold;
+        }
+        .peak-snr {
+            color: #00ff88;
+            font-size: 0.85em;
+        }
+        .peak-intensity {
+            color: #aaa;
+            font-size: 0.85em;
+        }
+        .parameter-group {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        .parameter-group label {
+            display: block;
+            color: #aaa;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .parameter-group input[type="range"] {
+            width: 100%;
+        }
+        .fit-result {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+        }
+        .fit-result h4 {
+            color: #00ff88;
+            margin-bottom: 10px;
+        }
+        .fit-result div {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        .btn-fit {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #000;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>峰值检测</h1>
+    </header>
+
+    <!-- 导航栏 -->
+    <nav class="main-nav" role="navigation" aria-label="主导航">
+        <a href="../index.html" class="nav-link">首页</a>
+        <a href="live.html" class="nav-link">实时采集</a>
+        <a href="peaks.html" class="nav-link active">峰值检测</a>
+        <a href="library.html" class="nav-link">谱库匹配</a>
+        <a href="processing.html" class="nav-link">数据处理</a>
+        <a href="difference.html" class="nav-link">差异对比</a>
+        <a href="settings.html" class="nav-link">设置</a>
+    </nav>
+    <div class="header">
+        <h1>峰值分析</h1>
+        <button onclick="window.close()" style="background:transparent;border:none;color:#fff;font-size:24px;cursor:pointer;">×</button>
+    </div>
+
+    <div class="peaks-container">
+        <!-- 图表区域 -->
+        <div class="chart-section">
+            <div class="peak-toolbar">
+                <button id="btn-auto-find" class="btn-auto-find">
+                    🔍 自动寻峰
+                </button>
+                <button id="btn-clear-peaks" style="padding: 10px 20px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
+                    🗑️ 清除所有峰
+                </button>
+                <button id="btn-export-peaks" style="padding: 10px 20px; background: #00d9ff; color: #000; border: none; border-radius: 4px; cursor: pointer;">
+                    📤 导出峰值列表
+                </button>
+            </div>
+
+            <div id="peaks-chart" style="width: 100%; height: 450px; background: #16213e; border-radius: 8px;"></div>
+        </div>
+
+        <!-- 峰值列表区域 -->
+        <div class="peak-list-section">
+            <h3 style="color: #00d9ff; margin-bottom: 15px;">参数设置</h3>
+
+            <div class="parameter-group">
+                <label>灵敏度：<span id="sensitivity-value">0.5</span></label>
+                <input type="range" id="sensitivity-slider" min="0" max="1" step="0.05" value="0.5">
+            </div>
+
+            <div class="parameter-group">
+                <label>最小信噪比：<span id="snr-value">3.0</span></label>
+                <input type="range" id="snr-slider" min="1" max="10" step="0.5" value="3.0">
+            </div>
+
+            <div class="parameter-group">
+                <label>最小峰间距：<span id="distance-value">5</span></label>
+                <input type="range" id="distance-slider" min="1" max="20" step="1" value="5">
+            </div>
+
+            <h3 style="color: #00d9ff; margin: 20px 0 15px;">识别结果 (<span id="peak-count">0</span> 个峰)</h3>
+
+            <div class="peak-list" id="peak-list">
+                <!-- 动态插入峰值项 -->
+            </div>
+
+            <div class="fit-result" id="fit-result" style="display: none;">
+                <h4 style="color: #00ff88; margin-bottom: 10px;">拟合结果</h4>
+                <div>位置：<span id="fit-position">-</span> cm⁻¹</div>
+                <div>强度：<span id="fit-intensity">-</span></div>
+                <div>半高宽：<span id="fit-fwhm">-</span> cm⁻¹</div>
+                <div>峰面积：<span id="fit-area">-</span></div>
+                <div>R²: <span id="fit-r2">-</span></div>
+            </div>
+
+            <button id="btn-fit-peak" class="btn-fit" disabled>
+                📐 拟合选中峰
+            </button>
+        </div>
+    </div>
+
+    <script src="../echarts.min.js"></script>
+    <script src="../qwebchannel.js"></script>
+    <script type="module" src="../js/peaks.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+    "wavenumber_range": [200, 3200],
+    "num_points": 1024,
+    "normalization": "z-score",
+    "interpolation": "cubic",
+    "class_labels": [
+        "diamond",
+        "graphite",
+        "graphene",
+        "silicon",
+        "quartz",
+        "calcite",
+        "corundum",
+        "olivine",
+        "feldspar",
+        "zno"
+    ],
+    "transformer": {
+        "model_size": "tiny",
+        "embed_dim": 256,
+        "num_heads": 8,
+        "num_layers": 6,
+        "mlp_ratio": 4.0,
+        "dropout": 0.1,
+        "patch_size": 16
+    },
+    "uncertainty": {
+        "n_samples": 50,
+        "dropout_rate": 0.1,
+        "high_confidence_threshold": 0.8,
+        "low_confidence_threshold": 0.5
+    },
+    "explainability": {
+        "method": "attention",
+        "top_k": 5
+    }
+}

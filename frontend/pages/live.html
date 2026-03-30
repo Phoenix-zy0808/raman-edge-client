@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时采集 - 拉曼光谱边缘客户端</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .live-container { padding: 20px; }
+        .live-toolbar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .btn-live-start {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #000;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-live-pause {
+            background: linear-gradient(135deg, #ffaa00 0%, #cc8800 100%);
+            color: #000;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-live-stop {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: #fff;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-live-start:disabled,
+        .btn-live-pause:disabled,
+        .btn-live-stop:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .live-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 217, 255, 0.1);
+            border-radius: 6px;
+            border: 1px solid #00d9ff;
+        }
+        .live-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ff4444;
+            animation: pulse 1s infinite;
+        }
+        .live-indicator.active {
+            background: #00ff88;
+        }
+        .live-indicator.paused {
+            background: #ffaa00;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .live-timer {
+            font-family: 'Consolas', monospace;
+            font-size: 1.5em;
+            color: #00d9ff;
+        }
+        .refresh-rate-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+        }
+        .chart-container-live {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #333;
+            min-height: 450px;
+            position: relative;
+        }
+        .frame-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00ff88;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>实时采集</h1>
+    </header>
+
+    <!-- 导航栏 -->
+    <nav class="main-nav" role="navigation" aria-label="主导航">
+        <a href="../index.html" class="nav-link">首页</a>
+        <a href="live.html" class="nav-link active">实时采集</a>
+        <a href="peaks.html" class="nav-link">峰值检测</a>
+        <a href="library.html" class="nav-link">谱库匹配</a>
+        <a href="processing.html" class="nav-link">数据处理</a>
+        <a href="difference.html" class="nav-link">差异对比</a>
+        <a href="settings.html" class="nav-link">设置</a>
+    </nav>
+
+    <div class="live-container">
+        <!-- 工具栏 -->
+        <div class="live-toolbar">
+            <button id="btn-live-start" class="btn-live-start">
+                ▶️ 开始实时采集
+            </button>
+            <button id="btn-live-pause" class="btn-live-pause" disabled>
+                ⏸️ 暂停
+            </button>
+            <button id="btn-live-stop" class="btn-live-stop" disabled>
+                ⏹️ 停止
+            </button>
+
+            <div class="live-status">
+                <div class="live-indicator" id="live-indicator"></div>
+                <span id="live-status-text">待机</span>
+            </div>
+
+            <div class="live-timer" id="live-timer">00:00:00</div>
+
+            <div class="refresh-rate-control">
+                <label>刷新率 (Hz):</label>
+                <input type="number" id="refresh-rate-input"
+                       min="0.1" max="10" step="0.1" value="1.0"
+                       style="width: 60px; background: #1a1a2e; color: #eee; border: 1px solid #333; padding: 5px; border-radius: 4px;">
+                <button id="btn-apply-rate" style="padding: 5px 10px; background: #00d9ff; border: none; border-radius: 4px; cursor: pointer;">应用</button>
+            </div>
+        </div>
+
+        <!-- 图表容器 -->
+        <div class="chart-container-live">
+            <div id="live-chart" style="width: 100%; height: 450px;"></div>
+            <div class="frame-counter" id="frame-counter">Frame: 0</div>
+        </div>
+    </div>
+
+    <script src="../echarts.min.js"></script>
+    <script src="../qwebchannel.js"></script>
+    <script type="module" src="../js/live.js"></script>
+</body>
+</html>

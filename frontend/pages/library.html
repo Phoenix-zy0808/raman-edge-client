@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>谱库管理 - 拉曼光谱边缘客户端</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .library-container { padding: 20px; }
+        .library-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .substance-list { background: #16213e; border-radius: 8px; padding: 15px; }
+        .substance-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; }
+        .substance-item:last-child { border-bottom: none; }
+        .substance-info { flex: 1; }
+        .substance-name { color: #00d9ff; font-weight: bold; }
+        .substance-cas { color: #aaa; font-size: 0.85em; }
+        .substance-peaks { color: #888; font-size: 0.8em; }
+        .btn-import { background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%); color: #000; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-export { background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%); color: #000; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin-left: 10px; }
+        .btn-delete { background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%); color: #fff; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
+        .disclaimer { background: rgba(255, 68, 68, 0.1); border: 2px solid #ff4444; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #ff6666; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>谱库匹配</h1>
+    </header>
+
+    <!-- 导航栏 -->
+    <nav class="main-nav" role="navigation" aria-label="主导航">
+        <a href="../index.html" class="nav-link">首页</a>
+        <a href="live.html" class="nav-link">实时采集</a>
+        <a href="peaks.html" class="nav-link">峰值检测</a>
+        <a href="library.html" class="nav-link active">谱库匹配</a>
+        <a href="processing.html" class="nav-link">数据处理</a>
+        <a href="difference.html" class="nav-link">差异对比</a>
+        <a href="settings.html" class="nav-link">设置</a>
+    </nav>
+    <div class="header">
+        <h1>谱库管理</h1>
+        <button onclick="window.close()" style="background:transparent;border:none;color:#fff;font-size:24px;cursor:pointer;">×</button>
+    </div>
+    
+    <div class="library-container">
+        <div class="disclaimer">
+            ⚠️ <strong>重要提示：</strong> 本谱库包含的数据为演示数据，非 NIST 标准谱库。仅用于教学演示，不可用于实际物质分析。
+        </div>
+
+        <!-- 开发中提示 -->
+        <div style="background: rgba(255, 170, 0, 0.1); border: 2px solid #ffaa00; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #ffaa00; text-align: center;">
+            <span style="font-size: 24px; margin-right: 8px;">🚧</span>
+            <strong>功能开发中</strong> - 谱库管理功能预计在下个版本上线
+        </div>
+
+        <div class="library-header">
+            <div>
+                <button class="btn-import" onclick="showDevNotice('导入谱图')" style="opacity: 0.7; cursor: not-allowed;">📥 导入谱图</button>
+                <button class="btn-export" onclick="showDevNotice('导出谱库')" style="opacity: 0.7; cursor: not-allowed;">📤 导出谱库</button>
+            </div>
+            <div>
+                <span id="substance-count">10 种物质</span>
+            </div>
+        </div>
+
+        <div class="substance-list" id="substance-list">
+            <!-- 动态加载物质列表 -->
+        </div>
+    </div>
+
+    <script>
+        const substances = [
+            { id: 'silicon', name: '硅 (Silicon)', cas: '7440-21-3', peaks: '520 cm⁻¹' },
+            { id: 'diamond', name: '金刚石 (Diamond)', cas: '7782-40-3', peaks: '1332 cm⁻¹' },
+            { id: 'graphite', name: '石墨 (Graphite)', cas: '7782-42-5', peaks: '1580 cm⁻¹' },
+            { id: 'graphene', name: '石墨烯 (Graphene)', cas: '7782-42-5', peaks: '2680, 1580 cm⁻¹' },
+            { id: 'carbon_nanotube', name: '碳纳米管 (CNT)', cas: '308068-56-6', peaks: '1590, 2680 cm⁻¹' },
+            { id: 'benzene', name: '苯 (Benzene)', cas: '71-43-2', peaks: '992 cm⁻¹' },
+            { id: 'zno', name: '氧化锌 (ZnO)', cas: '1314-13-2', peaks: '437 cm⁻¹' },
+            { id: 'tio2', name: '二氧化钛 (TiO₂)', cas: '13463-67-7', peaks: '144 cm⁻¹' },
+            { id: 'al2o3', name: '氧化铝 (Al₂O₃)', cas: '1344-28-1', peaks: '418 cm⁻¹' },
+            { id: 'caco3', name: '碳酸钙 (CaCO₃)', cas: '471-34-1', peaks: '1086 cm⁻¹' }
+        ];
+
+        function renderSubstanceList() {
+            const list = document.getElementById('substance-list');
+            list.innerHTML = substances.map(s => `
+                <div class="substance-item">
+                    <div class="substance-info">
+                        <div class="substance-name">${s.name}</div>
+                        <div class="substance-cas">CAS: ${s.cas}</div>
+                        <div class="substance-peaks">特征峰：${s.peaks}</div>
+                    </div>
+                    <button class="btn-delete" onclick="showDevNotice('删除物质')" style="opacity: 0.7; cursor: not-allowed;">删除</button>
+                </div>
+            `).join('');
+        }
+
+        function showDevNotice(featureName) {
+            showToast(`🚧 ${featureName}功能开发中，敬请期待！`, 'warning');
+        }
+
+        function showToast(message, type) {
+            // 简单的 toast 实现
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'warning' ? '#ffaa00' : '#00d9ff'};
+                color: #000;
+                padding: 12px 24px;
+                border-radius: 6px;
+                font-weight: bold;
+                z-index: 10000;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        renderSubstanceList();
+    </script>
+</body>
+</html>

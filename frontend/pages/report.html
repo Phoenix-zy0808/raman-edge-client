@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报告生成 - 拉曼光谱边缘客户端</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .report-container { padding: 20px; }
+        .report-preview { background: #fff; color: #000; border-radius: 8px; padding: 30px; margin: 20px 0; min-height: 400px; }
+        .report-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 20px; }
+        .report-title { font-size: 20px; font-weight: bold; }
+        .report-info { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .report-section { margin-bottom: 20px; }
+        .report-section h3 { border-bottom: 1px solid #666; padding-bottom: 10px; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn-export { background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%); color: #000; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-print { background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%); color: #000; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; }
+        .option-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📄 报告生成</h1>
+        <button onclick="window.close()" style="background:transparent;border:none;color:#fff;font-size:24px;cursor:pointer;">×</button>
+    </div>
+    
+    <div class="report-container">
+        <!-- 开发中提示 -->
+        <div style="background: rgba(255, 170, 0, 0.1); border: 2px solid #ffaa00; border-radius: 8px; padding: 15px; margin-bottom: 20px; color: #ffaa00; text-align: center;">
+            <span style="font-size: 24px; margin-right: 8px;">🚧</span>
+            <strong>功能开发中</strong> - 报告生成功能预计在下个版本上线
+        </div>
+
+        <div>
+            <h2>报告选项</h2>
+            <div class="option-item">
+                <input type="checkbox" id="include-spectrum" checked disabled>
+                <label for="include-spectrum">包含光谱图</label>
+            </div>
+            <div class="option-item">
+                <input type="checkbox" id="include-peaks" checked disabled>
+                <label for="include-peaks">包含峰值分析</label>
+            </div>
+            <div class="option-item">
+                <input type="checkbox" id="include-match" checked disabled>
+                <label for="include-match">包含谱库匹配结果</label>
+            </div>
+            <div class="option-item">
+                <input type="checkbox" id="include-info" disabled>
+                <label for="include-info">包含样品信息</label>
+            </div>
+            <div class="option-item">
+                <label>报告格式：</label>
+                <select id="report-format" disabled style="opacity: 0.6;">
+                    <option value="pdf">PDF</option>
+                    <option value="docx">Word</option>
+                    <option value="html">HTML</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="report-preview">
+            <div class="report-header">
+                <div class="report-title">拉曼光谱分析报告</div>
+                <div>报告编号：RPT-2026-0322-001</div>
+            </div>
+
+            <div class="report-info">
+                <div>
+                    <div><strong>样品名称:</strong> 样品 001</div>
+                    <div><strong>检测日期:</strong> 2026-03-22</div>
+                </div>
+                <div>
+                    <div><strong>积分时间:</strong> 100 ms</div>
+                    <div><strong>累加次数:</strong> 1</div>
+                </div>
+            </div>
+
+            <div class="report-section">
+                <h3>光谱图</h3>
+                <div style="text-align: center; color: #666; padding: 50px;">[光谱图预览区域]</div>
+            </div>
+
+            <div class="report-section">
+                <h3>峰值分析</h3>
+                <div style="color: #666;">[峰值分析结果]</div>
+            </div>
+
+            <div class="report-section">
+                <h3>谱库匹配结果</h3>
+                <div style="color: #666;">[谱库匹配结果]</div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-export" onclick="showDevNotice('导出报告')" style="opacity: 0.7; cursor: not-allowed;">📥 导出报告</button>
+            <button class="btn-print" onclick="showDevNotice('打印报告')" style="opacity: 0.7; cursor: not-allowed;">🖨️ 打印报告</button>
+        </div>
+    </div>
+
+    <script>
+        function showDevNotice(featureName) {
+            showToast(`🚧 ${featureName}功能开发中，敬请期待！`, 'warning');
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'warning' ? '#ffaa00' : '#00d9ff'};
+                color: #000;
+                padding: 12px 24px;
+                border-radius: 6px;
+                font-weight: bold;
+                z-index: 10000;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
