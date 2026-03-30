@@ -27,7 +27,11 @@
       "Bash(git remote *)",
       "Bash(git init)",
       "Bash(git config *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git rm *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(rmdir *)"
     ]
   },
   "$version": 3

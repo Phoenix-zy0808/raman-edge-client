@@ -1,3 +1,9 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 # Python
 __pycache__/
 *.py[cod]
@@ -61,3 +67,13 @@ my_data/
 *.bak
 .DS_Store
 Thumbs.db
+
+# Qwen
+.qwen/
+
+# 测试文件（归档到 tests_archive）
+test_*.py
+test_*.txt
+test_*.log
+e2e_*.txt
+e2e_*.log

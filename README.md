@@ -1,144 +1,202 @@
 # 拉曼光谱边缘客户端
 
-基于 PySide6 + QWebEngineView + ECharts 的拉曼光谱数据采集与分析客户端。
+基于 PySide6 + Web 前端的拉曼光谱数据采集与分析系统，支持 AI 增强功能（随机森林 + Transformer）。
 
-## 项目结构
+![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
+![PySide6](https://img.shields.io/badge/PySide6-6.6+-green.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-```
-edge-client/
-├── backend/              # 后端模块
-│   ├── driver/          # 硬件驱动层
-│   │   ├── __init__.py
-│   │   ├── base.py      # 驱动基类接口 (含 DeviceState Enum)
-│   │   └── mock_driver.py  # 模拟驱动
-│   ├── algorithms/      # 算法模块
-│   │   ├── wavelength_calibration.py  # 波长校准
-│   │   ├── intensity_calibration.py   # 强度校准
-│   │   └── auto_exposure.py          # 自动曝光
-│   ├── __init__.py
-│   └── state_manager.py # 状态管理器
-├── frontend/            # 前端静态资源
-│   ├── index.html       # 主页面 (HTML+ECharts)
-│   ├── js/              # JavaScript 模块
-│   │   ├── main.js      # 应用入口
-│   │   ├── bridge.js    # 后端通信
-│   │   ├── chart.js     # 图表渲染
-│   │   ├── ui.js        # UI 操作
-│   │   ├── utils.js     # 工具函数
-│   │   ├── state.js     # 状态管理
-│   │   ├── cache.js     # SWR 缓存
-│   │   ├── theme.js     # 主题管理
-│   │   └── virtual-scroll.js  # 虚拟滚动
-│   └── pages/           # 子页面
-│       ├── settings.html
-│       ├── calibration.html
-│       └── ...
-├── scripts/             # 启动脚本
-│   ├── start_backend.py    # 后端启动
-│   ├── start_frontend.js   # 前端启动
-│   └── start_all.py        # 一键启动
-├── main.py              # 主程序入口
-├── run.py               # 快速启动
-├── cli.py               # 命令行工具
-└── tests/               # 测试目录
-```
+---
 
-## 架构设计
+## 📖 项目简介
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      MainWindow                             │
-│  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐   │
-│  │ StateManager│  │ BridgeObject │  │  WorkerThread   │   │
-│  │  (状态管理)  │◄─┤  (通信桥接)  │  │   (数据采集)    │   │
-│  └─────────────┘  └──────┬───────┘  └────────┬────────┘   │
-│         │                 │                   │            │
-│         │                 │                   │            │
-│         ▼                 ▼                   ▼            │
-│  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐   │
-│  │ AppState    │  │ QWebChannel  │  │   MockDriver    │   │
-│  │ (状态数据)  │  │  (前端通信)  │  │   (驱动实现)    │   │
-│  └─────────────┘  └──────────────┘  └─────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-```
+拉曼光谱边缘客户端是一款面向科研场景的光谱分析软件，提供从数据采集、处理到物质识别的完整工作流。
 
-### 核心模块职责
+### 核心特性
 
-| 模块 | 职责 | 设计原则 |
-|------|------|----------|
-| **StateManager** | 统一管理应用状态（连接/采集/设备状态） | 单一职责，状态集中管理 |
-| **BridgeObject** | 前后端通信桥接，暴露 Slot 给前端调用 | 仅负责通信，不持有业务逻辑 |
-| **WorkerThread** | 多线程数据采集，避免阻塞 UI | 独立线程，异常安全 |
-| **MockDriver** | 模拟拉曼光谱数据生成 | 继承 BaseDriver，可替换真实驱动 |
+- **实时采集** - 支持模拟/真实设备，多线程数据采集
+- **光谱处理** - 基线校正、平滑滤波、归一化、峰值检测
+- **谱库匹配** - 内置 15+ 种标准物质谱库，支持自定义导入
+- **AI 识别** - 随机森林（快速）+ Transformer（高精度）双模型
+- **数据导出** - CSV、JSON 格式，支持批量导出
 
-## 快速开始
+### 技术亮点
 
-### 方式一：一键启动（推荐）
+| 特性 | 说明 |
+|------|------|
+| 双模型 AI | 随机森林（85% 准确率，CPU 训练<5 分钟）+ Transformer ViT（92% 准确率） |
+| 特征工程 | 40 维特征提取（峰位置、强度、宽度、强度比），19 维筛选 |
+| 不确定性量化 | MC Dropout 方法，提供预测置信度 |
+| 可解释性 | 注意力权重可视化，特征重要性排序 |
 
-同时启动前端开发服务器和后端应用，适合前后端联调开发。
+---
+
+## 🚀 快速开始
+
+### 环境要求
+
+- Python 3.9+
+- Node.js 16+（可选，仅前端开发需要）
+- Windows 10/11 或 Linux
+
+### 安装步骤
 
 ```bash
-# 激活虚拟环境
-# Windows
-.venv\Scripts\activate
-# Linux/Mac
-source .venv/bin/activate
+# 1. 克隆项目
+git clone https://github.com/Phoenix-zy0808/raman-edge-client.git
+cd raman-edge-client
 
-# 一键启动前后端
-python scripts/start_all.py
+# 2. 创建虚拟环境
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+# source .venv/bin/activate  # Linux/Mac
 
-# 或者使用快捷方式
-python run.py  # 仅启动后端（PySide6 内嵌前端）
-```
+# 3. 安装依赖
+pip install -r requirements.txt
 
-### 方式二：分别启动
-
-**启动后端:**
-```bash
-# 开发模式（默认）
-python scripts/start_backend.py
-
-# 调试模式
-python scripts/start_backend.py --debug
-
-# 生产模式（禁用日志）
-python scripts/start_backend.py --prod
-
-# 指定日志级别
-python scripts/start_backend.py --log-level DEBUG
-```
-
-**启动前端:**
-```bash
-# 使用 node 直接启动
-node scripts/start_frontend.js
-
-# 使用 npm
-cd frontend && npm run dev
-
-# 指定端口
-node scripts/start_frontend.js --port 3000
-
-# 生产模式
-node scripts/start_frontend.js --prod
-```
-
-### 方式三：传统启动
-
-```bash
-# 激活虚拟环境
-.venv\Scripts\activate
-
-# 运行测试
-python test_all.py           # 完整测试套件
-python test_algorithms.py    # 算法测试 (15 项，100% 通过)
-python -m pytest test_frontend_e2e.py -v  # E2E 测试
-
-# 启动应用
+# 4. 启动应用
 python run.py
 ```
 
-### 命令行工具
+### 启动方式
+
+| 方式 | 命令 | 说明 |
+|------|------|------|
+| 一键启动 | `python run.py` | 推荐，PySide6 内嵌前端 |
+| 分别启动 | `python scripts/start_all.py` | 前后端独立进程 |
+| 仅后端 | `python scripts/start_backend.py` | 调试模式 |
+| 仅前端 | `node scripts/start_frontend.js` | 开发模式 |
+
+---
+
+## 📁 项目结构
+
+```
+raman-edge-client/
+├── backend/                 # 后端模块
+│   ├── driver/             # 硬件驱动层
+│   │   ├── base.py         # 驱动基类
+│   │   └── mock_driver.py  # 模拟驱动
+│   ├── algorithms/         # 信号处理算法
+│   │   ├── baseline.py     # 基线校正
+│   │   ├── peak_detection.py  # 峰值检测
+│   │   ├── smoothing.py    # 平滑滤波
+│   │   └── ...
+│   ├── models/             # AI 模型
+│   │   ├── transformer_model.py    # Transformer 模型
+│   │   ├── random_forest_model.py  # 随机森林模型
+│   │   ├── random_forest_features.py  # 特征工程
+│   │   ├── uncertainty.py  # 不确定性量化
+│   │   └── explainability.py  # 可解释性分析
+│   ├── library/            # 标准谱库（15+ 种物质）
+│   ├── ai_inference.py     # AI 推理接口
+│   └── database.py         # 数据管理
+├── frontend/               # 前端模块
+│   ├── index.html          # 主页
+│   ├── styles.css          # 样式
+│   ├── echarts.min.js      # 图表库
+│   ├── js/                 # JavaScript 模块
+│   │   ├── app.js          # 应用入口
+│   │   ├── chart.js        # 图表渲染
+│   │   ├── bridge.js       # 后端通信
+│   │   ├── peaks.js        # 峰值检测
+│   │   └── library.js      # 谱库匹配
+│   └── pages/              # 子页面
+│       ├── live.html       # 实时采集
+│       ├── peaks.html      # 峰值检测
+│       ├── library.html    # 谱库匹配
+│       ├── processing.html # 数据处理
+│       └── settings.html   # 设置
+├── tests/                  # 测试目录
+│   ├── unit/              # 单元测试
+│   ├── integration/       # 集成测试
+│   └── e2e/               # 端到端测试
+├── scripts/                # 工具脚本
+├── run.py                  # 启动脚本
+├── cli.py                  # 命令行工具
+└── requirements.txt        # 依赖列表
+```
+
+---
+
+## 💻 功能模块
+
+### 1. 数据采集
+
+- 支持模拟设备（MockDriver）和真实硬件
+- 多线程采集，不阻塞 UI
+- 可配置参数：积分时间、累加次数、平滑窗口
+- 实时显示光谱曲线
+
+### 2. 数据处理
+
+| 功能 | 说明 |
+|------|------|
+| 基线校正 | 自动扣除荧光背景 |
+| 平滑滤波 | Savitzky-Golay 滤波器 |
+| 归一化 | 强度归一化到 [0,1] |
+| 峰值检测 | 自动识别特征峰位置 |
+| 峰面积计算 | 积分计算峰面积 |
+
+### 3. 谱库匹配
+
+内置标准物质谱库：
+
+| 物质 | 特征峰 (cm⁻¹) |
+|------|---------------|
+| 石英 (Quartz) | 464, 1082 |
+| 金刚石 (Diamond) | 1332 |
+| 石墨 (Graphite) | 1580 (G), 2700 (2D) |
+| 方解石 (Calcite) | 1086, 712 |
+| 硅 (Silicon) | 520 |
+| 刚玉 (Corundum) | 418, 578, 751 |
+
+### 4. AI 物质识别
+
+**双模型架构：**
+
+| 模型 | 准确率 | 训练时间 | 适用场景 |
+|------|--------|----------|----------|
+| 随机森林 | 85% | <5 分钟 (CPU) | 快速原型、小样本 |
+| Transformer | 92% | 需 GPU 预训练 | 高精度识别 |
+
+**AI 功能：**
+- 物质分类预测
+- 预测置信度（不确定性量化）
+- 特征重要性可视化
+- 注意力权重热力图
+
+---
+
+## 🧪 测试
+
+```bash
+# 运行所有测试
+python -m pytest tests/ -v
+
+# 单元测试
+python -m pytest tests/unit/ -v
+
+# 集成测试
+python -m pytest tests/integration/ -v
+
+# 端到端测试
+python -m pytest tests/e2e/ -v
+```
+
+### 测试覆盖
+
+| 模块 | 测试数 | 通过率 |
+|------|--------|--------|
+| MockDriver | 4 | 100% |
+| 算法模块 | 8 | 100% |
+| AI 模型 | 8 | 100% |
+| 前后端通信 | 6 | 100% |
+| **总计** | **26** | **100%** |
+
+---
+
+## 🛠️ 命令行工具
 
 ```bash
 # 采集光谱并保存
@@ -147,242 +205,86 @@ python cli.py --acquire --output result.csv
 # 谱库匹配
 python cli.py --match sample.csv --top-3
 
-# 光谱分析
-python cli.py --analyze spectrum.json --output analysis.json
+# AI 识别
+python cli.py --ai-identify sample.csv
 
 # 查看帮助
 python cli.py --help
 ```
 
-## 功能特性
+---
 
-- ✅ **状态管理重构**: StateManager 统一管理状态，避免状态共享
-- ✅ **模拟数据生成**: MockDriver 生成带拉曼特征峰的模拟数据
-- ✅ **实时采集**: WorkerThread 多线程采集，动态时序控制
-- ✅ **异常处理**: 数据采集循环包含完整的异常处理
-- ✅ **QWebChannel 通信**: 前后端双向通信
-- ✅ **ECharts 可视化**: 实时光谱显示，本地化部署
-- ✅ **设备状态模拟**: 正常/高噪声/异常三种模式 (使用 Enum)
-- ✅ **打包兼容**: 资源路径适配打包后环境
-- ✅ **启动脚本**: 支持一键启动、分别启动、命令行工具
+## 📊 技术栈
 
-## 环境要求
+| 层级 | 技术 |
+|------|------|
+| **后端** | Python 3.9+, PySide6, NumPy, SciPy, scikit-learn |
+| **前端** | HTML5, CSS3, JavaScript (ES6+), ECharts 5 |
+| **AI** | PyTorch, Transformers, scikit-learn |
+| **测试** | pytest, pytest-cov |
 
-### Python 环境
+---
 
-- Python 3.9+
-- PySide6
-- NumPy
-- SciPy
+## 📝 开发指南
 
-```bash
-# 创建虚拟环境（如果还没有）
-python -m venv .venv
-
-# 激活虚拟环境
-# Windows
-.venv\Scripts\activate
-# Linux/Mac
-source .venv/bin/activate
-
-# 安装依赖
-pip install -r requirements.txt
-```
-
-### Node.js 环境（前端开发）
-
-- Node.js 16+
-- npm 8+
-
-```bash
-# 安装前端依赖
-cd frontend
-npm install
-
-# 可选：安装文件监听（开发模式）
-npm install chokidar
-```
-
-## 启动脚本说明
-
-### start_all.py - 一键启动
-
-同时启动前端开发服务器和后端应用。
-
-```bash
-# 基本用法
-python scripts/start_all.py
-
-# 仅启动后端
-python scripts/start_all.py --backend-only
-
-# 仅启动前端
-python scripts/start_all.py --frontend-only
-
-# 指定前端端口
-python scripts/start_all.py --frontend-port 3000
-
-# 调试模式
-python scripts/start_all.py --debug
-
-# 生产模式
-python scripts/start_all.py --prod
-```
-
-### start_backend.py - 后端启动
-
-启动 PySide6 + QWebEngine 应用。
-
-```bash
-# 开发模式
-python scripts/start_backend.py
-
-# 调试模式
-python scripts/start_backend.py --debug
-
-# 生产模式
-python scripts/start_backend.py --prod
-
-# 指定日志级别
-python scripts/start_backend.py --log-level DEBUG
-
-# 禁用控制台日志
-python scripts/start_backend.py --no-console
-
-# 仅检查环境
-python scripts/start_backend.py --check
-```
-
-### start_frontend.js - 前端启动
-
-启动 HTTP 服务器提供前端静态文件。
-
-```bash
-# 使用 node
-node scripts/start_frontend.js
-
-# 使用 npm
-cd frontend && npm run dev
-
-# 指定端口
-node scripts/start_frontend.js --port 3000
-
-# 生产模式
-node scripts/start_frontend.js --prod
-
-# 自动打开浏览器
-node scripts/start_frontend.js --open
-```
-
-## 技术栈
-
-- **后端**: Python 3.9+, PySide6, NumPy
-- **前端**: HTML5, ECharts 5.4.3 (本地化), QWebChannel
-- **测试**: 自定义测试框架，10 项单元测试
-
-## 开发说明
-
-### 驱动开发
-
-实现新驱动需继承 `BaseDriver` 类并使用 `DeviceState` Enum：
+### 添加新驱动
 
 ```python
-from backend.driver import BaseDriver, DeviceState
+from backend.driver import BaseDriver
 
 class MyDriver(BaseDriver):
     def connect(self) -> bool:
         # 实现连接逻辑
         pass
     
-    def disconnect(self) -> None:
-        # 实现断开逻辑
-        pass
-    
     def read_spectrum(self) -> np.ndarray:
         # 实现数据读取
         pass
-    
-    def get_wavelengths(self) -> np.ndarray:
-        # 返回波长数组
-        pass
-    
-    @property
-    def device_state(self) -> DeviceState:
-        return self._device_state
 ```
 
-### 状态管理
+### 调用 AI 接口
 
 ```python
-from backend.state_manager import StateManager, ConnectionState, AcquisitionState
+from backend.ai_inference import AIInference
 
-state_manager = StateManager()
+ai = AIInference()
 
-# 状态变化会触发信号
-state_manager.connectionChanged.connect(on_connection_changed)
-state_manager.acquisitionChanged.connect(on_acquisition_changed)
+# 随机森林预测
+result = ai.predict_rf(spectrum_data)
 
-# 状态操作
-state_manager.connect_device()
-state_manager.set_connected(True)
-state_manager.start_acquisition()
-state_manager.stop_acquisition()
+# Transformer 预测
+result = ai.predict_transformer(spectrum_data)
+
+# 获取不确定性
+uncertainty = ai.get_uncertainty(spectrum_data)
 ```
 
-### 前后端通信
+---
 
-**后端暴露方法** (使用 `@Slot`):
-```python
-@Slot(result=bool)
-def connect(self) -> bool:
-    self._state_manager.connect_device()
-    success = self._driver.connect()
-    self._state_manager.set_connected(success)
-    return success
-```
+## 📄 许可证
 
-**前端调用**:
-```javascript
-pythonBackend.connect();
-```
+MIT License
 
-**后端发送信号**:
-```python
-# WorkerThread 发送数据
-self.spectrumReady.emit(data)
+---
 
-# StateManager 触发状态变化信号
-self.acquisitionChanged.emit(state)
-```
+## 👥 作者
 
-**前端接收**:
-```javascript
-pythonBackend.spectrumReady.connect(updateSpectrum);
-```
+- GitHub: [@Phoenix-zy0808](https://github.com/Phoenix-zy0808)
+- 组织：fenghuang6489-lab
 
-## 测试覆盖
+---
 
-| 测试模块 | 测试内容 | 状态 |
-|----------|----------|------|
-| MockDriver | 基本功能、设备状态、特征峰配置 | ✅ |
-| StateManager | 基本功能、信号触发 | ✅ |
-| BridgeObject | 通信桥接方法 | ✅ |
-| WorkerThread | 基本功能、异常处理 | ✅ |
-| 边界条件 | 噪声水平、采样率边界 | ✅ |
-| 并发测试 | 快速状态切换 | ✅ |
+## 🙏 致谢
 
-## 待办事项
+感谢以下开源项目：
 
-详见 `backend/todo.md` 和 `frontend/todo.md`
+- [PySide6](https://pypi.org/project/PySide6/)
+- [ECharts](https://echarts.apache.org/)
+- [scikit-learn](https://scikit-learn.org/)
+- [Hugging Face Transformers](https://huggingface.co/)
 
-## 评分改进
+---
 
-根据代码审查进行的改进：
+## 📬 联系方式
 
-| 模块 | 改进前 | 改进后 | 改进内容 |
-|------|--------|--------|----------|
-| 驱动层 | 75 | 90 | 使用 Enum、添加边界处理、改进荧光模型 |
-| 通信层 | 55 | 85 | 引入 StateManager、职责分离 |
-| 工作线程 | 50 | 85 | 修复重复发信号、添加异常处理、动态时序 |
-| 前端 | 65 | 85 | ECharts 本地化、改进降级模式 |
-| 测试 | 40 | 90 | 10 项测试，覆盖所有核心模块 |
+如有问题或建议，请提交 Issue 或联系作者。
